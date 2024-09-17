@@ -42,14 +42,11 @@ jobs:
       - name: Set up kubeconfig
         run: |
           aws eks update-kubeconfig --region ${{ matrix.region }} --name ${{ secrets.EKS_CLUSTER_NAME }}
-       
-
-      - name: Change directory to the correct path
-        run: cd pip-task 
+      
 
       - name: Deploy to EKS Cluster
         run: |
-          kubectl apply -f app/kubernetes/
+          kubectl apply -f pip-task/app/kubernetes/
 
       - name: Verify Deployment
         run: |
