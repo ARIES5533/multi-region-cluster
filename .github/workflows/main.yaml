@@ -32,6 +32,8 @@ jobs:
   
   deploy:
     runs-on: ubuntu-latest
+    needs: trivy_scan
+
 
     strategy:
       matrix:
