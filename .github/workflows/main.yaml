@@ -6,6 +6,30 @@ on:
       - main
 
 jobs:
+
+  trivy_scan:
+    name: Scan Docker Image for Vulnerabilities
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Install Trivy
+        run: |
+          wget https://github.com/aquasecurity/trivy/releases/download/v0.43.0/trivy_0.43.0_Linux-64bit.deb
+          sudo dpkg -i trivy_0.43.0_Linux-64bit.deb
+          trivy --version  # Verify Trivy installation
+
+      - name: Scan Docker image with Trivy
+        run: |
+          echo "Scanning Docker image for vulnerabilities..."
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.POSTGRES_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.REDIS_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.RESULT_APP_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.VOTING_APP_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.WORKER_APP_IMAGE }}
+  
   deploy:
     runs-on: ubuntu-latest
 
