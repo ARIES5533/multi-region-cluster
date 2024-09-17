@@ -46,7 +46,7 @@ jobs:
 
       - name: Deploy to EKS Cluster
         run: |
-          kubectl apply -f pip-task/app/kubernetes/
+          kubectl apply -f /app/kubernetes/
 
       - name: Verify Deployment
         run: |
