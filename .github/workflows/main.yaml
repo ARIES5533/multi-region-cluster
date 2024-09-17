@@ -45,7 +45,10 @@ jobs:
       
       - name: List files in pip-task/app/kubernetes/
         run: |
-          ls -R pip-task/app/kubernetes/
+          ls -R app/kubernetes/
+
+      - name: Print current working directory 
+        run: pwd
 
 
       - name: Deploy to EKS Cluster
