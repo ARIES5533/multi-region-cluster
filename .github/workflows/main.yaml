@@ -43,6 +43,10 @@ jobs:
         run: |
           aws eks update-kubeconfig --region ${{ matrix.region }} --name ${{ secrets.EKS_CLUSTER_NAME }}
       
+      - name: List files in pip-task/app/kubernetes/
+        run: |
+          ls -R pip-task/app/kubernetes/
+
 
       - name: Deploy to EKS Cluster
         run: |
