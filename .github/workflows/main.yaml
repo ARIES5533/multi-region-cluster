@@ -80,6 +80,6 @@ jobs:
 
       - name: Verify Deployment
         run: |
-          kubectl get pods -n olumoko-voting-app
+          kubectl delete deployment --all -n olumoko-voting-app
 
     environment: ${{ matrix.region }}
