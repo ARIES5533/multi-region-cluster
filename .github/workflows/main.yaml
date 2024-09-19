@@ -24,15 +24,15 @@ jobs:
       - name: Scan Docker image with Trivy
         run: |
           echo "Scanning Docker image for vulnerabilities for POSTGRES..."
-          trivy image --cache-dir /path/to/cache --severity HIGH,CRITICAL --format table ${{ secrets.POSTGRES_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.POSTGRES_IMAGE }}
           echo "Scanning Docker image for vulnerabilities for REDIS..."
-          trivy image --cache-dir /path/to/cache --severity HIGH,CRITICAL --format table ${{ secrets.REDIS_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.REDIS_IMAGE }}
           echo "Scanning Docker image for vulnerabilities for RESULT_APP..."
-          trivy image --cache-dir /path/to/cache --severity HIGH,CRITICAL --format table ${{ secrets.RESULT_APP_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.RESULT_APP_IMAGE }}
           echo "Scanning Docker image for vulnerabilities for VOTING_APP..."
-          trivy image --cache-dir /path/to/cache --severity HIGH,CRITICAL --format table ${{ secrets.VOTING_APP_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.VOTING_APP_IMAGE }}
           echo "Scanning Docker image for vulnerabilities for WORKER_APP..."
-          trivy image --cache-dir /path/to/cache --severity HIGH,CRITICAL --format table ${{ secrets.WORKER_APP_IMAGE }}
+          trivy image --severity HIGH,CRITICAL --format table ${{ secrets.WORKER_APP_IMAGE }}
   
   deploy:
     runs-on: ubuntu-latest
