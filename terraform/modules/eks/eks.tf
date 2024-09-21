@@ -9,6 +9,7 @@ module "eks" {
 
   cluster_name    = local.cluster_name
   cluster_version = "1.24"
+  create_iam_role = true
   enable_irsa     = true
 
   vpc_id                         = var.vpc_primary_id
@@ -60,6 +61,7 @@ module "eks-secondary" {
 
   cluster_name    = local.cluster_name
   cluster_version = "1.24"
+  create_iam_role = true
   enable_irsa     = true
 
   vpc_id                         = var.vpc_secondary_id
@@ -93,3 +95,46 @@ module "eks-secondary" {
     }
   }  
 }
+
+
+
+#######################################
+
+resource "aws_iam_policy" "autoscaler_policy" {
+  name        = "EKSClusterAutoscalerPolicy"
+  description = "Policy to allow EKS Cluster Autoscaler to interact with AWS APIs"
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "autoscaling:DescribeAutoScalingGroups",
+          "autoscaling:DescribeAutoScalingInstances",
+          "autoscaling:DescribeLaunchConfigurations",
+          "autoscaling:DescribeTags",
+          "autoscaling:SetDesiredCapacity",
+          "autoscaling:TerminateInstanceInAutoScalingGroup",
+          "ec2:DescribeLaunchTemplateVersions"
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
+}
+
+#########
+
+# Attach IAM Policy to Worker Nodes - Primary Cluster
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach_primary" {
+  role       = module.eks.eks_managed_node_groups["one"].iam_role_name
+  policy_arn = aws_iam_policy.autoscaler_policy.arn
+}
+
+# Attach IAM Policy to Worker Nodes - Secondary Cluster
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach_secondary" {
+  role       = module.eks-secondary.eks_managed_node_groups["one"].iam_role_name
+  policy_arn = aws_iam_policy.autoscaler_policy.arn
+}
+
