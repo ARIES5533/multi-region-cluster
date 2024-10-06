@@ -46,8 +46,33 @@ output "vpc_primary_private_subnets" {
 }
 
 
+##########Define the primary RDS subnet group in the eu-west-1 region#########
+resource "aws_db_subnet_group" "primary" {
+  name        = "primary-db-subnet-group"
+  provider    = aws.eu-west-1
+  description = "Subnet group for primary RDS instance in us-west-1"
+  subnet_ids  = module.vpc_primary.private_subnets
+
+  tags = {
+    Name = "Olumoko-Primary-DB-Subnet-Group"
+  }
+}
+
+
+output "vpc_primary_db_subnet_group_name" {
+  description = "The name of the primary database subnet group."
+  value       = aws_db_subnet_group.primary.name
+}
+
+output "vpc_primary_db_subnet_group_id" {
+  description = "The name of the primary database subnet group."
+  value       = aws_db_subnet_group.primary.id
+}
+
+
 ################################################################################
 
+################################################################################
 
 
 ############Create secondary VPC in another region (eu-west-1)##################
@@ -97,36 +122,6 @@ output "vpc_secondary_private_subnets" {
   value       = module.vpc_secondary.private_subnets
 }
 
-
-##############################################################################
-
-
-##########Define the primary RDS subnet group in the eu-west-1 region#########
-resource "aws_db_subnet_group" "primary" {
-  name        = "primary-db-subnet-group"
-  provider    = aws.eu-west-1
-  description = "Subnet group for primary RDS instance in us-west-1"
-  subnet_ids  = module.vpc_primary.private_subnets
-
-  tags = {
-    Name = "Olumoko-Primary-DB-Subnet-Group"
-  }
-}
-
-
-output "vpc_primary_db_subnet_group_name" {
-  description = "The name of the primary database subnet group."
-  value       = aws_db_subnet_group.primary.name
-}
-
-output "vpc_primary_db_subnet_group_id" {
-  description = "The name of the primary database subnet group."
-  value       = aws_db_subnet_group.primary.id
-}
-
-#######################################################################################
-
-
 #############Define the secondary RDS subnet group in the us-west-2 region#############
 resource "aws_db_subnet_group" "secondary" {
   provider    = aws.us-west-2
@@ -149,4 +144,4 @@ output "vpc_secondary_db_subnet_group_id" {
   value       = aws_db_subnet_group.secondary.id
 }
 
-#############################################################
+##############################################################################

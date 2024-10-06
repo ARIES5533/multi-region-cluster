@@ -1,3 +1,5 @@
+# Add aws_caller_identity to get the AWS account ID
+data "aws_caller_identity" "current" {}
 
 locals {
   cluster_name = "olumoko-project"
@@ -18,42 +20,24 @@ module "eks" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
-
   }
 
   eks_managed_node_groups = {
     one = {
       name = "node-group-1"
-
-      instance_types = ["t3.medium"]
-
-      min_size     = 2
-      max_size     = 3
-      desired_size = 2
-    }
-
-    two = {
-      name = "node-group-2"
-
-      instance_types = ["t3.medium"]
-
+      instance_types = ["t3.large"]
       min_size     = 2
       max_size     = 3
       desired_size = 2
     }
   }
-
 }
 
-
 ##############################################################
-
 
 module "eks-secondary" {
   source  = "terraform-aws-modules/eks/aws"
   version = "19.13.1"
-  
-
 
   providers = {
     aws = aws.us-west-2
@@ -70,33 +54,18 @@ module "eks-secondary" {
 
   eks_managed_node_group_defaults = {
     ami_type = "AL2_x86_64"
-
   }
 
   eks_managed_node_groups = {
     one = {
       name = "node-group-1"
-
-      instance_types = ["t3.medium"]
-
-      min_size     = 1
-      max_size     = 2
-      desired_size = 1
-    }
-
-    two = {
-      name = "node-group-2"
-
-      instance_types = ["t3.medium"]
-
+      instance_types = ["t3.large"]
       min_size     = 1
       max_size     = 2
       desired_size = 1
     }
   }  
 }
-
-
 
 #######################################
 
@@ -124,17 +93,35 @@ resource "aws_iam_policy" "autoscaler_policy" {
   })
 }
 
-#########
+#######################################
 
-# Attach IAM Policy to Worker Nodes - Primary Cluster
-resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach_primary" {
-  role       = module.eks.eks_managed_node_groups["one"].iam_role_name
-  policy_arn = aws_iam_policy.autoscaler_policy.arn
+# Define the IAM role for the Cluster Autoscaler
+resource "aws_iam_role" "cluster_autoscaler_role" {
+  name = "cluster-autoscaler-role"
+
+  assume_role_policy = jsonencode({
+    "Version": "2012-10-17",
+    "Statement": [
+      {
+        "Effect": "Allow",
+        "Principal": {
+          "Federated": "arn:aws:iam::${data.aws_caller_identity.current.account_id}:oidc-provider/${module.eks.oidc_provider}"
+        },
+        "Action": "sts:AssumeRoleWithWebIdentity",
+        "Condition": {
+          "StringEquals": {
+            "${module.eks.cluster_oidc_issuer_url}:sub": "system:serviceaccount:kube-system:cluster-autoscaler-sa"
+          }
+        }
+      }
+    ]
+  })
 }
 
-# Attach IAM Policy to Worker Nodes - Secondary Cluster
-resource "aws_iam_role_policy_attachment" "cluster_autoscaler_attach_secondary" {
-  role       = module.eks-secondary.eks_managed_node_groups["one"].iam_role_name
+# Attach the autoscaler policy to the role
+resource "aws_iam_role_policy_attachment" "cluster_autoscaler_policy_attachment" {
   policy_arn = aws_iam_policy.autoscaler_policy.arn
+  role       = aws_iam_role.cluster_autoscaler_role.name
 }
 
+# If needed, additional role policies can be added using aws_iam_role_policy

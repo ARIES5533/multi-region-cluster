@@ -1,0 +1,9 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: my-pdb
+spec:
+  minAvailable: 1  # Ensures at least 8 pods are available
+  selector:
+    matchLabels:
+      app: my-demo-voting-app  # Targets pods with this label
